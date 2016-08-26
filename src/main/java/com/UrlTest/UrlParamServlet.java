@@ -26,7 +26,7 @@ public class UrlParamServlet extends HttpServlet {
         StringBuffer stringBuffer = new StringBuffer();
         stringBuffer.append("<html><body><h2>UrlConnection 传参</h2>");
         String param_01String, param_02String;
-        param_01String = getRandomString(1024);
+        param_01String = getRandomString(10);
         param_02String = getRandomString(10);
         String params = "?param_01=" + URLEncoder.encode(param_01String, "UTF-8") + "&param_02=" + URLEncoder.encode(param_02String, "UTF-8");
         String urlString = req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort() + req.getContextPath() + "/param";
@@ -34,21 +34,20 @@ public class UrlParamServlet extends HttpServlet {
         try {
             connection = UrlUtil.createConnection(urlString + params);
             connection.setRequestMethod("POST");
-
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-
             OutputStream outputStream = connection.getOutputStream();
             String postParamString = "post参数-post参数-post参数";
             String postParamString2 = getRandomString(30);
-
             String data = "postParam_01=" + postParamString + ";" + "postParam_02=" + postParamString2 + ";";
-
             outputStream.write(data.getBytes("UTF-8"));
             outputStream.flush();
             outputStream.close();
-            int reponseCode = connection.getResponseCode();
-            stringBuffer.append("responseCode: " + reponseCode + "<br>");
-            if (reponseCode == HttpURLConnection.HTTP_OK) {
+            //   int statusCode = connection.getResponseCode();
+            Map map=UrlUtil.getResponsecodeAndTime(connection);
+            int statusCode=(Integer) map.get("statusCode");
+            long during=(Long) map.get("duringTime");
+            stringBuffer.append("during time is "+during+" .responseCode:" + statusCode + "<br>");
+            if (statusCode == HttpURLConnection.HTTP_OK) {
                 stringBuffer.append(UrlUtil.getConnectionInputString(connection));
             }
             stringBuffer.append(UrlUtil.getConnectionHeader(connection));

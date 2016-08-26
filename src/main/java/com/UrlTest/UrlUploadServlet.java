@@ -31,11 +31,11 @@ public class UrlUploadServlet extends HttpServlet {
         stringBuffer.append("<html><body><h2>UrlConnection Upload File</h2>");
         String urlpre = req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort() + req.getContextPath();
         String urlString = urlpre + "/writeToFile";
-
-
         DiskFileItemFactory factory = new DiskFileItemFactory();
         factory.setSizeThreshold(4096);
-        String realPath = req.getSession().getServletContext().getRealPath("/");
+        //String realPath = req.getSession().getServletContext().getRealPath("/");
+        // String realPath = this.getClass().getClassLoader().getResource("/").getPath();
+        String realPath = getDocumentRoot(req);
         factory.setRepository(new File(realPath));
         ServletFileUpload upload = new ServletFileUpload(factory);
         upload.setHeaderEncoding("UTF-8");
@@ -44,22 +44,22 @@ public class UrlUploadServlet extends HttpServlet {
         StringBuilder stringBuilder = null;
         BufferedReader reader = null;
         stringBuilder = new StringBuilder();
-
         if (req.getHeader("content-type") != null) {
-            try {
-                items = upload.parseRequest(req);
-            } catch (FileUploadException e) {
-                e.printStackTrace();
+            if (req.getHeader("content-type").contains("multipart/form-data")) {
+                try {
+                    items = upload.parseRequest(req);
+                } catch (FileUploadException e) {
+                    e.printStackTrace();
+                }
+                FileItem item = items.get(0);
+                fileName = item.getName();
+                reader = new BufferedReader(new BufferedReader(new InputStreamReader(item.getInputStream())));
             }
-            FileItem item = items.get(0);
-            fileName = item.getName();
-            reader = new BufferedReader(new BufferedReader(new InputStreamReader(item.getInputStream())));
-
         } else {
-            String defaultFileName = req.getSession().getServletContext().getRealPath("/WEB-INF/classes/uploadDefaultFile.txt");
+            String defaultFileName = getDocumentRoot(req) + "/readme";
             File defaultfile = new File(defaultFileName);
             reader = new BufferedReader(new BufferedReader(new FileReader(defaultfile)));
-            fileName = "uploadDefaultFile.txt";
+            fileName = "uploadDefaultFile";
         }
         String line = null;
         while ((line = reader.readLine()) != null) {
@@ -76,9 +76,10 @@ public class UrlUploadServlet extends HttpServlet {
             OutputStream os = connection.getOutputStream();
             os.write(filecontent.getBytes("UTF-8"));
             os.flush();
-            //获取返回内容
-            int statusCode = connection.getResponseCode();
-            stringBuffer.append("responseCode:" + statusCode + "<br>");
+            Map map = UrlUtil.getResponsecodeAndTime(connection);
+            int statusCode = (Integer) map.get("statusCode");
+            long during = (Long) map.get("duringTime");
+            stringBuffer.append("during time is " + during + " .responseCode:" + statusCode + "<br>");
             if (statusCode == 200) {
                 stringBuffer.append(UrlUtil.getConnectionInputString(connection));
             }
@@ -99,4 +100,12 @@ public class UrlUploadServlet extends HttpServlet {
         doGet(req, resp);
     }
 
+    public String getDocumentRoot(HttpServletRequest request) {
+        String webRoot = request.getSession().getServletContext().getRealPath("/");
+        if (webRoot == null) {
+            webRoot = this.getClass().getClassLoader().getResource("/").getPath();
+            webRoot = webRoot.substring(0, webRoot.indexOf("WEB-INF"));
+        }
+        return webRoot;
+    }
 }

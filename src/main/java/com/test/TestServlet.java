@@ -14,17 +14,24 @@ import java.io.InputStreamReader;
 public class TestServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+       int sleettime= (int)(1+Math.random()*(300-10+1));
+        try {
+            Thread.sleep(sleettime);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         StringBuffer stringBuffer=new StringBuffer();
-        stringBuffer.append("This is TestServlet<br>");
-
+        stringBuffer.append("<html><body><h2>This is TestServlet</h2>");
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(req.getInputStream()));
         String line = null;
         StringBuilder stringBuilder = new StringBuilder();
         while ((line = bufferedReader.readLine()) != null) {
             stringBuilder.append(line);
         }
-        stringBuffer.append(stringBuilder);
-        resp.getWriter().write("test received:"+stringBuffer.toString());
+        stringBuffer.append("sleeptime is " +sleettime+
+                ".received: "+stringBuilder);
+        stringBuffer.append("</body></html>");
+        resp.getWriter().write(stringBuffer.toString());
     }
 
     @Override

@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.URLConnection;
 
 /**
  * Created by admin on 2016/8/19.
@@ -17,7 +18,7 @@ public class Error404Servlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         StringBuffer stringBuffer=new StringBuffer();
         String urlString = req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort() + req.getContextPath() + "/xx";
-        HttpURLConnection connection=UrlUtil.createConnection(urlString);
+        URLConnection connection=UrlUtil.createConnection(urlString);
         stringBuffer.append("<html><body><h2>UrlConnection External Error</h2>");
         try{
             connection.connect();
@@ -25,7 +26,8 @@ public class Error404Servlet extends HttpServlet {
             ex.printStackTrace();
         }finally {
             if (connection != null) {
-                connection.disconnect();
+                connection=null;
+                //connection.disconnect();
             }
         }
         stringBuffer.append("---404 HTTP Error---");

@@ -139,5 +139,22 @@
         <servlet-name>Error500Servlet</servlet-name>
         <url-pattern>/500</url-pattern>
     </servlet-mapping>
+    <servlet>
+        <servlet-name>StartHttpServerServlet</servlet-name>
+        <servlet-class>com.test.SimpleHttpServerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>StartHttpServerServlet</servlet-name>
+        <url-pattern>/httpserver</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>MultipleUrlErrorServlet</servlet-name>
+        <servlet-class>com.UrlTest.UrlExternalError.MultipleUrlErrorServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>MultipleUrlErrorServlet</servlet-name>
+        <url-pattern>/urlerrmult</url-pattern>
+    </servlet-mapping>
+
 </web-app>
 

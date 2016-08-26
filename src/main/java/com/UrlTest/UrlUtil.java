@@ -3,6 +3,7 @@ package com.UrlTest;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -54,5 +55,20 @@ public class UrlUtil {
             stringBuffer.append(key + ":" + map.get(key) + "<br>");
         }
         return stringBuffer.toString()+"<br>";
+    }
+    public static Map getResponsecodeAndTime(HttpURLConnection connection){
+        Long during=null;
+        Map map = new HashMap();
+        Long  date1=System.currentTimeMillis();
+        try {
+            int statusCode = connection.getResponseCode();
+            map.put("statusCode",statusCode);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Long  date2=System.currentTimeMillis();
+        during=date2-date1;
+        map.put("duringTime",during);
+        return map;
     }
 }

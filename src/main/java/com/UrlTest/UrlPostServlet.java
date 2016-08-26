@@ -43,8 +43,10 @@ public class UrlPostServlet extends HttpServlet {
             os.write(nowtime.getBytes("UTF-8"));
             os.flush();
 
-            int statusCode = connection.getResponseCode();
-            stringBuffer.append("responseCode:" + statusCode + "<br>");
+            Map map=UrlUtil.getResponsecodeAndTime(connection);
+            int statusCode=(Integer) map.get("statusCode");
+            long during=(Long) map.get("duringTime");
+            stringBuffer.append("during time is "+during+" .responseCode:" + statusCode + "<br>");
             if (statusCode == 200) {
                 stringBuffer.append(UrlUtil.getConnectionInputString(connection));
             }

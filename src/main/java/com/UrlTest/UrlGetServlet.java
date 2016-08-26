@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -23,10 +24,12 @@ public class UrlGetServlet extends HttpServlet {
         StringBuffer stringBuffer = new StringBuffer();
         String urlString = null;
         stringBuffer.append("<html><body><h2>UrlConnection 调用</h2>");
-        if (req.getParameter("urlConnection_url") == null) {
+        if (req.getParameter("urlConnect") == null) {
             urlString = req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort() + req.getContextPath() + "/test";
         } else {
-            urlString = (String) req.getParameter("urlConnection_url");
+            urlString = (String) req.getParameter("urlConnect");
+            String queryString=req.getQueryString();
+            urlString=URLDecoder.decode(req.getQueryString().toString().substring(queryString.indexOf("=")+1),"UTF-8");
             if (!urlString.contains("http")) {
                 String urlpre = req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort() + req.getContextPath();
                 urlString = urlpre + "/" + urlString;
@@ -35,6 +38,7 @@ public class UrlGetServlet extends HttpServlet {
         stringBuffer.append(urlString+"<br>");
         HttpURLConnection connection = null;
         try {
+
             connection=UrlUtil.createConnection(urlString);
             connection.setRequestMethod("GET");
             // connection.connect();
@@ -46,13 +50,17 @@ public class UrlGetServlet extends HttpServlet {
             OutputStream os = connection.getOutputStream();
             os.write(nowtime.getBytes("UTF-8"));
             os.flush();
-
-            int statusCode = connection.getResponseCode();
-            stringBuffer.append("responseCode:" + statusCode + "<br>");
+         //   int statusCode = connection.getResponseCode();
+            Map map=UrlUtil.getResponsecodeAndTime(connection);
+            int statusCode=(Integer) map.get("statusCode");
+            long during=(Long) map.get("duringTime");
+            stringBuffer.append("during time is "+during+" .responseCode:" + statusCode + "<br>");
             if (statusCode == 200) {
+                stringBuffer.append("-----------------------------------------------------------------");
                 stringBuffer.append(UrlUtil.getConnectionInputString(connection));
+                stringBuffer.append("-----------------------------------------------------------------");
             }
-           stringBuffer.append(UrlUtil.getConnectionHeader(connection));
+            stringBuffer.append(UrlUtil.getConnectionHeader(connection));
             //return response;
         } catch (Exception e) {
             e.printStackTrace();
@@ -61,7 +69,7 @@ public class UrlGetServlet extends HttpServlet {
                 connection.disconnect();
             }
         }
-        stringBuffer.append("</body></html>");
+        stringBuffer.append(" </body></html>");
         resp.getWriter().write(stringBuffer.toString());
     }
 

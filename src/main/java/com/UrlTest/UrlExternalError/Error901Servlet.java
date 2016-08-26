@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.URLConnection;
 
 /**
  * Created by admin on 2016/8/19.
@@ -18,7 +19,7 @@ public class Error901Servlet extends HttpServlet {
         StringBuffer stringBuffer=new StringBuffer();
         //String urlString = req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort() + req.getContextPath() + "/xx";
         String urlString="http://localhosthost:8080/test";
-        HttpURLConnection connection=UrlUtil.createConnection(urlString);
+        URLConnection connection=UrlUtil.createConnection(urlString);
         stringBuffer.append("<html><body><h2>UrlConnection External Error</h2>");
         try{
             connection.connect();

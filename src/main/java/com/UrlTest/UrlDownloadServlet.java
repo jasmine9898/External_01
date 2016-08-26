@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Map;
 
 import static com.sun.org.apache.xerces.internal.xinclude.XIncludeHandler.BUFFER_SIZE;
 
@@ -27,7 +28,8 @@ public class UrlDownloadServlet extends HttpServlet {
         } else {
             fileUrl = req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort() + req.getContextPath() + "/readme";
         }
-        String result = downloadFile(fileUrl, req.getSession().getServletContext().getRealPath("/"));
+        String path = getDocumentRoot(req);
+        String result = downloadFile(fileUrl, path);
         stringBuffer.append(result + "</body></html>");
         resp.getWriter().write(stringBuffer.toString());
     }
@@ -44,10 +46,12 @@ public class UrlDownloadServlet extends HttpServlet {
         HttpURLConnection connection = null;
         try {
             connection = UrlUtil.createConnection(fileURL);
-            int responseCode = connection.getResponseCode();
-            stringBuffer.append("responseCode: " + responseCode + "<br>");
+            Map map = UrlUtil.getResponsecodeAndTime(connection);
+            int statusCode = (Integer) map.get("statusCode");
+            long during = (Long) map.get("duringTime");
+            stringBuffer.append("during time is " + during + " .responseCode:" + statusCode + "<br>");
             // always check HTTP response code first
-            if (responseCode == HttpURLConnection.HTTP_OK) {
+            if (statusCode == HttpURLConnection.HTTP_OK) {
                 String fileName = "";
                 String disposition = connection.getHeaderField("Content-Disposition");
                 disposition = "attachment;filename=DownloadFile";
@@ -74,7 +78,6 @@ public class UrlDownloadServlet extends HttpServlet {
                 // opens input stream from the HTTP connection
                 InputStream inputStream = connection.getInputStream();
                 String saveFilePath = saveDir + File.separator + fileName;
-
                 // opens an output stream to save into file
                 FileOutputStream outputStream = new FileOutputStream(new File(saveFilePath));
 
@@ -85,9 +88,9 @@ public class UrlDownloadServlet extends HttpServlet {
                 }
                 outputStream.close();
                 inputStream.close();
-                stringBuffer.append("<br>File downloaded ! ");
+                stringBuffer.append("<br>File downloaded ! saved path:" + saveDir);
             } else {
-                stringBuffer.append("No file to download. Server replied HTTP code: " + responseCode);
+                stringBuffer.append("No file to download. Server replied HTTP code: " + statusCode);
             }
             stringBuffer.append(UrlUtil.getConnectionHeader(connection));
         } catch (Exception ex) {
@@ -100,4 +103,12 @@ public class UrlDownloadServlet extends HttpServlet {
         return stringBuffer.toString();
     }
 
+    public String getDocumentRoot(HttpServletRequest request) {
+        String webRoot = request.getSession().getServletContext().getRealPath("/");
+        if (webRoot == null) {
+            webRoot = this.getClass().getClassLoader().getResource("/").getPath();
+            webRoot = webRoot.substring(0, webRoot.indexOf("WEB-INF"));
+        }
+        return webRoot;
+    }
 }
